@@ -172,7 +172,7 @@
                 <span class="menu-label">Sub Division Registration</span>
             </a>
 
-            <a href="#" class="menu-card" onclick="alert('Department Registration - coming soon')">
+            <a href="department-registration.php" class="menu-card" >
                 <div class="menu-icon">
                     <svg viewBox="0 0 48 48" fill="none">
                         <circle cx="24" cy="16" r="8" fill="#0d9488"/>
