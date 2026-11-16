@@ -386,7 +386,7 @@ function loadDivisions(companyId, selectedId) {
         });
 }
 
-// On edit page load, divisions already filled by PHP; if company changes, reload
+
 <?php if ($edit && $edit['company_id']): ?>
 // already loaded
 <?php endif; ?>
