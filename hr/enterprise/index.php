@@ -200,7 +200,7 @@
                 <span class="menu-label">Sub Department Registration</span>
             </a>
 
-            <a href="#" class="menu-card" onclick="alert('Section Registration - coming soon')">
+            <a href="section-registration.php" class="menu-card" >
                 <div class="menu-icon">
                     <svg viewBox="0 0 48 48" fill="none">
                         <rect x="8" y="12" width="14" height="24" rx="3" fill="#0d9488"/>
@@ -212,7 +212,7 @@
                 <span class="menu-label">Section Registration</span>
             </a>
 
-            <a href="#" class="menu-card" onclick="alert('Sub Section Registration - coming soon')">
+            <a href="sub-section-registration.php" class="menu-card">
                 <div class="menu-icon">
                     <svg viewBox="0 0 48 48" fill="none">
                         <rect x="8" y="10" width="14" height="12" rx="2" fill="#0d9488"/>
