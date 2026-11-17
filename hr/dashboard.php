@@ -249,7 +249,7 @@
                 <div class="icon">S</div>
                 SIPWAY CAMPUS
             </div>
-            <button class="nav-btn" onclick="history.back()" title="Back">
+            <button class="nav-btn">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
             </button>
             <button class="nav-btn" onclick="location.href='dashboard.php'" title="Home">
@@ -333,7 +333,7 @@
             </a>
 
             <!-- 2. Enterprise -->
-            <a href="enterprise/index.php" class="module-card" onclick="alert('Enterprise module coming soon')">
+            <a href="enterprise/index.php" class="module-card" >
                 <div class="card-image">
                     <svg viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <ellipse cx="100" cy="145" rx="75" ry="12" fill="#bfdbfe" opacity="0.4"/>

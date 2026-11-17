@@ -243,7 +243,7 @@
                 <span class="menu-label">Registration Years</span>
             </a>
 
-            <a href="#" class="menu-card" onclick="alert('Company Rules - coming soon')">
+            <a href="company-rules.php" class="menu-card">
                 <div class="menu-icon">
                     <svg viewBox="0 0 48 48" fill="none">
                         <rect x="14" y="8" width="20" height="28" rx="2" fill="#0d9488"/>
