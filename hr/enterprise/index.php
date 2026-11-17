@@ -232,7 +232,7 @@
         <div class="section-title">Enterprise</div>
         <div class="menu-grid">
 
-            <a href="#" class="menu-card" onclick="alert('Registration Years - coming soon')">
+            <a href="registration-years.php" class="menu-card">
                 <div class="menu-icon">
                     <svg viewBox="0 0 48 48" fill="none">
                         <rect x="10" y="12" width="28" height="28" rx="3" fill="#0d9488"/>
