@@ -6,7 +6,7 @@ $name = $emp['name_with_initials'] ?? $emp['full_name'] ?? $emp[COL_EMP_NO];
 
 $tiles = [
   ['Employee Profile',      'profile.php',          '#e0e7ff', '<circle cx="50" cy="35" r="16"/><path d="M20 90a30 30 0 0 1 60 0z"/>'],
-  ['Attendance Display',    'coming-soon.php?m=Attendance+Display', '#dbeafe', '<rect x="15" y="20" width="70" height="60" rx="6" fill="none" stroke="currentColor" stroke-width="6"/><path d="M15 40h70M35 12v14M65 12v14" stroke="currentColor" stroke-width="6" fill="none"/>'],
+  ['Attendance Display',    'attendance-display.php', '#dbeafe', '<rect x="15" y="20" width="70" height="60" rx="6" fill="none" stroke="currentColor" stroke-width="6"/><path d="M15 40h70M35 12v14M65 12v14" stroke="currentColor" stroke-width="6" fill="none"/>'],
   ['Leave Application',     'coming-soon.php?m=Leave+Application',  '#ede9fe', '<rect x="12" y="35" width="76" height="50" rx="8"/><path d="M38 35v-10h24v10" fill="none" stroke="currentColor" stroke-width="6"/>'],
   ['Apply Manual Attendance','manual-attendance.php','#fce7f3','<rect x="28" y="10" width="44" height="80" rx="8" fill="none" stroke="currentColor" stroke-width="6"/><circle cx="50" cy="75" r="4"/>'],
   ['Notification Center',   'coming-soon.php?m=Notification+Center','#dbeafe', '<path d="M50 12a22 22 0 0 0-22 22v22l-8 10h60l-8-10V34A22 22 0 0 0 50 12z"/><circle cx="50" cy="86" r="7"/>'],
