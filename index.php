@@ -257,7 +257,7 @@
         </a>
 
         <!-- Self Service Portal Card -->
-        <a href="self-service.php" class="card">
+        <a href="self-service/index.php" class="card">
             <div class="icon-wrapper">
                 <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <!-- Dashed circle -->
