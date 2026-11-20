@@ -6,7 +6,6 @@ $empNo = $emp[COL_EMP_NO];
 $name  = $emp['name_with_initials'] ?? $emp['full_name'] ?? $empNo;
 $db    = getDB();
 
-// Table eka nathnam hadanawa
 $db->query("CREATE TABLE IF NOT EXISTS manual_attendance (
   id INT AUTO_INCREMENT PRIMARY KEY,
   emp_no VARCHAR(50) NOT NULL,
@@ -76,57 +75,455 @@ $old = fn($k) => e($_POST[$k] ?? '');
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Apply Manual Attendance</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apply Manual Attendance - Sipway Campus</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Poppins',sans-serif;background:#fff;color:#222;font-size:16px}
-nav{background:#1ba1e2;color:#fff;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(15px,12vw,240px)}
-nav a{color:#fff;text-decoration:none;font-size:15px;margin-right:24px}
-nav .user{font-size:15px}
-.wrap{max-width:1430px;margin:24px auto;padding:0 20px}
-.tabs{display:flex;gap:6px}
-.tabs button{border:0;background:#eee;padding:10px 14px;font:500 16px 'Poppins',sans-serif;cursor:pointer;border-top:2px solid transparent}
-.tabs button.active{background:#fff;border-top-color:#e00;box-shadow:0 -1px 0 #ddd}
-.panel{border:1px solid #eee;padding:25px;display:none}
-.panel.show{display:block}
-h2{font-weight:400;font-size:27px;padding-bottom:10px;border-bottom:1px solid #ddd;margin-bottom:22px}
-h3{font-size:21px;font-weight:600;margin:28px 0 18px}
-.row{display:flex;align-items:center;margin-bottom:22px}
-.row label.main{width:200px}
-.remarks{width:565px;max-width:100%;height:40px;border:1px solid #888;padding:6px 10px;font:inherit}
-.grid{display:grid;grid-template-columns:200px 170px 230px 100px 1fr;gap:14px 14px;align-items:center;padding-left:25px}
-.btn-row{display:flex;gap:25px;flex-wrap:wrap;padding-left:25px;margin-bottom:18px}
-.mode{background:#8cc4fb;color:#fff;border:0;padding:12px 35px;font:500 17px 'Poppins',sans-serif;border-radius:3px;box-shadow:0 2px 6px rgba(0,0,0,.25);cursor:pointer}
-.mode.on{background:#1d7fe0}
-.mode:hover{background:#4aa3f5}
-.fld{display:grid;grid-template-columns:200px 170px 200px 120px;gap:16px 0;padding-left:25px;align-items:center;margin-bottom:6px}
-.fld input{height:32px;border:1px solid #bbb;background:#f3f3f3;padding:2px 6px;font:15px monospace;width:168px}
-.fld input:disabled{opacity:.55;cursor:not-allowed}
-.fld .gap{padding-left:100px}
-.actions{margin-top:26px;display:flex;gap:6px}
-.submit{background:#0cc02b;color:#fff;border:0;width:125px;height:63px;font:500 17px 'Poppins',sans-serif;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.3)}
-.new{background:#8f8f8f;color:#fff;border:0;width:125px;height:63px;font:500 17px 'Poppins',sans-serif;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.3)}
-.alert{padding:12px 16px;border-radius:4px;margin-bottom:18px;font-size:15px}
-.alert.err{background:#fde8ea;color:#b4232f}.alert.ok{background:#e3f7e8;color:#15803d}
-details{margin-top:28px;width:675px;max-width:100%}
-summary{cursor:pointer;color:#fff;font-size:19px;padding:16px 25px;list-style:none;background:repeating-linear-gradient(135deg,#0f3b73 0 14px,#0b2d5a 14px 28px)}
-details .body{border:1px solid #ddd;border-top:0;padding:15px 25px;font-size:15px}
-details .body p{margin-bottom:6px}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th{background:#1ba1e2;color:#fff;text-align:left;padding:10px}
-td{padding:9px 10px;border-bottom:1px solid #eee}
-.badge{padding:3px 10px;border-radius:12px;font-size:12px;background:#fef3c7;color:#92400e}
-.badge.Approved{background:#dcfce7;color:#166534}.badge.Rejected{background:#fee2e2;color:#991b1b}
-.scroll{overflow-x:auto}
-@media(max-width:900px){.fld{grid-template-columns:1fr 1fr}.fld .gap{padding-left:0}.row{flex-direction:column;align-items:flex-start;gap:8px}}
+  :root {
+    --primary: #0ea5e9;
+    --primary-dark: #0284c7;
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* Navbar */
+  nav {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(16px);
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    border-bottom: 1px solid rgba(14, 165, 233, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  }
+
+  nav .l, nav .r { display: flex; align-items: center; gap: 26px; }
+
+  nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 14.5px;
+    font-weight: 500;
+    transition: color 0.25s ease;
+  }
+
+  nav a:hover { color: var(--primary); }
+
+  .brand {
+    font-weight: 800;
+    font-size: 17px;
+    color: var(--text) !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .brand span {
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    background: #f1f5f9;
+    padding: 5px 14px 5px 5px;
+    border-radius: 50px;
+  }
+
+  .user i {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    display: inline-block;
+  }
+
+  .logout-btn {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    color: white !important;
+    padding: 8px 18px;
+    border-radius: 10px;
+    font-weight: 600 !important;
+    font-size: 13.5px !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+    transition: all 0.3s ease !important;
+  }
+
+  .logout-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
+  }
+
+  /* Main */
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px 60px;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .tabs button {
+    border: none;
+    background: #e2e8f0;
+    color: var(--text-muted);
+    padding: 11px 20px;
+    font: 600 14.5px 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.25s ease;
+  }
+
+  .tabs button.active {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    color: white;
+    box-shadow: 0 4px 14px rgba(14, 165, 233, 0.3);
+  }
+
+  .tabs button:hover:not(.active) {
+    background: #cbd5e1;
+  }
+
+  /* Panel */
+  .panel {
+    display: none;
+    background: var(--card);
+    border-radius: 18px;
+    padding: 28px 28px 40px;
+    box-shadow: 0 8px 30px rgba(14, 165, 233, 0.08);
+    border: 1px solid rgba(255,255,255,0.9);
+  }
+
+  .panel.show { display: block; }
+
+  .panel h2 {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 22px;
+    letter-spacing: -0.3px;
+  }
+
+  .panel h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 28px 0 14px;
+    color: var(--text);
+  }
+
+  /* Alerts */
+  .alert {
+    padding: 14px 18px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-size: 14.5px;
+    font-weight: 500;
+  }
+
+  .alert.err {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+  }
+
+  .alert.ok {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+  }
+
+  /* Form */
+  .row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .row label.main {
+    width: 160px;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .remarks {
+    width: 100%;
+    max-width: 520px;
+    height: 44px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 0 14px;
+    font: 500 14.5px 'Plus Jakarta Sans', sans-serif;
+    background: #f8fafc;
+    transition: border-color 0.25s ease;
+  }
+
+  .remarks:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  /* Mode buttons */
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .mode {
+    background: #e0f2fe;
+    color: var(--primary-dark);
+    border: 1.5px solid #bae6fd;
+    padding: 10px 22px;
+    font: 600 14px 'Plus Jakarta Sans', sans-serif;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .mode:hover {
+    background: #bae6fd;
+  }
+
+  .mode.on {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+  }
+
+  /* Fields */
+  .fld {
+    display: grid;
+    grid-template-columns: 150px 180px 150px 180px;
+    gap: 12px 16px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .fld label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .fld input {
+    height: 42px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: #f8fafc;
+    padding: 0 12px;
+    font: 500 14px 'Plus Jakarta Sans', sans-serif;
+    transition: border-color 0.25s ease;
+  }
+
+  .fld input:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  .fld input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f1f5f9;
+  }
+
+  /* Actions */
+  .actions {
+    margin-top: 32px;
+    display: flex;
+    gap: 12px;
+  }
+
+  .submit {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    border: none;
+    height: 48px;
+    padding: 0 32px;
+    font: 600 15px 'Plus Jakarta Sans', sans-serif;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+    transition: all 0.25s ease;
+  }
+
+  .submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(34, 197, 94, 0.4);
+  }
+
+  .new {
+    background: #e2e8f0;
+    color: var(--text);
+    border: none;
+    height: 48px;
+    padding: 0 28px;
+    font: 600 15px 'Plus Jakarta Sans', sans-serif;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .new:hover {
+    background: #cbd5e1;
+  }
+
+  /* Details */
+  details {
+    margin-top: 36px;
+  }
+
+  summary {
+    cursor: pointer;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 14px 20px;
+    list-style: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+  }
+
+  details .body {
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    padding: 16px 20px;
+    background: #fff;
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+
+  details .body p {
+    margin-bottom: 6px;
+  }
+
+  /* Table */
+  .scroll {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  th {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: #fff;
+    text-align: left;
+    padding: 13px 12px;
+    font-weight: 600;
+    font-size: 13.5px;
+  }
+
+  td {
+    padding: 12px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  tr:hover td {
+    background: #f0f9ff;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+
+  .badge.Pending {
+    background: #fef3c7;
+    color: #d97706;
+  }
+
+  .badge.Approved {
+    background: #d1fae5;
+    color: #059669;
+  }
+
+  .badge.Rejected {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    nav { padding: 0 20px; }
+    .wrap { padding: 24px 16px 50px; }
+    .fld {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    nav { height: 62px; padding: 0 14px; }
+    .user span { display: none; }
+    .fld {
+      grid-template-columns: 1fr;
+    }
+    .row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .row label.main {
+      width: 100%;
+    }
+    .remarks {
+      max-width: 100%;
+    }
+  }
 </style>
 </head>
 <body>
+
 <nav>
-  <div><a href="dashboard.php"><b>&#9638; Smart HRIS</b></a><a href="dashboard.php">&#8630;</a><a href="dashboard.php">Home</a></div>
-  <div class="user">Hello, <?= e($name) ?> &nbsp; <a href="logout.php" style="margin:0">Logout</a></div>
+  <div class="l">
+    <a class="brand" href="dashboard.php">&#9638; <span>Smart HRIS</span></a>
+    <a href="dashboard.php">&#8630; Back</a>
+    <a href="dashboard.php">Home</a>
+  </div>
+  <div class="r">
+    <div class="user">
+      <i></i>
+      <span>Hello, <?= e($name) ?></span>
+    </div>
+    <a href="logout.php" class="logout-btn">Logout</a>
+  </div>
 </nav>
 
 <div class="wrap">
@@ -139,35 +536,50 @@ td{padding:9px 10px;border-bottom:1px solid #eee}
   <div class="panel" id="p-apply">
     <h2>Apply Manual Attendance</h2>
     <?php if ($err): ?><div class="alert err"><?= e($err) ?></div><?php endif; ?>
+
     <form method="post" id="mform">
-      <div class="row"><label class="main">Remarks</label>
-        <input class="remarks" type="text" name="remarks" maxlength="255" value="<?= $old('remarks') ?>"></div>
+      <div class="row">
+        <label class="main">Remarks</label>
+        <input class="remarks" type="text" name="remarks" maxlength="255" value="<?= $old('remarks') ?>" placeholder="Enter remarks...">
+      </div>
 
       <h3>Check In / Out</h3>
       <div class="btn-row">
         <button type="button" class="mode" data-g="c" data-m="in">Check In</button>
         <button type="button" class="mode" data-g="c" data-m="out">Check Out</button>
-        <button type="button" class="mode" data-g="c" data-m="both">Both(In &amp; Out)</button>
+        <button type="button" class="mode" data-g="c" data-m="both">Both (In & Out)</button>
         <button type="button" class="mode" id="incBreak">Include Break</button>
       </div>
+
       <div class="fld">
-        <label>Check In Date :</label><input type="date" name="check_in_date" id="check_in_date" value="<?= $old('check_in_date') ?>" disabled>
-        <label class="gap">Check In Time :</label><input type="time" name="check_in_time" id="check_in_time" value="<?= $old('check_in_time') ?>" disabled>
-        <label>Check Out Date :</label><input type="date" name="check_out_date" id="check_out_date" value="<?= $old('check_out_date') ?>" disabled>
-        <label class="gap">Check Out Time :</label><input type="time" name="check_out_time" id="check_out_time" value="<?= $old('check_out_time') ?>" disabled>
+        <label>Check In Date</label>
+        <input type="date" name="check_in_date" id="check_in_date" value="<?= $old('check_in_date') ?>" disabled>
+        <label>Check In Time</label>
+        <input type="time" name="check_in_time" id="check_in_time" value="<?= $old('check_in_time') ?>" disabled>
+
+        <label>Check Out Date</label>
+        <input type="date" name="check_out_date" id="check_out_date" value="<?= $old('check_out_date') ?>" disabled>
+        <label>Check Out Time</label>
+        <input type="time" name="check_out_time" id="check_out_time" value="<?= $old('check_out_time') ?>" disabled>
       </div>
 
       <h3>Break In / Out</h3>
       <div class="btn-row">
         <button type="button" class="mode" data-g="b" data-m="in">Break In</button>
         <button type="button" class="mode" data-g="b" data-m="out">Break Out</button>
-        <button type="button" class="mode" data-g="b" data-m="both">Both(In &amp; Out)</button>
+        <button type="button" class="mode" data-g="b" data-m="both">Both (In & Out)</button>
       </div>
+
       <div class="fld">
-        <label>Break In Date :</label><input type="date" name="break_in_date" id="break_in_date" value="<?= $old('break_in_date') ?>" disabled>
-        <label class="gap">Break In Time :</label><input type="time" name="break_in_time" id="break_in_time" value="<?= $old('break_in_time') ?>" disabled>
-        <label>Break Out Date :</label><input type="date" name="break_out_date" id="break_out_date" value="<?= $old('break_out_date') ?>" disabled>
-        <label class="gap">Break Out Time :</label><input type="time" name="break_out_time" id="break_out_time" value="<?= $old('break_out_time') ?>" disabled>
+        <label>Break In Date</label>
+        <input type="date" name="break_in_date" id="break_in_date" value="<?= $old('break_in_date') ?>" disabled>
+        <label>Break In Time</label>
+        <input type="time" name="break_in_time" id="break_in_time" value="<?= $old('break_in_time') ?>" disabled>
+
+        <label>Break Out Date</label>
+        <input type="date" name="break_out_date" id="break_out_date" value="<?= $old('break_out_date') ?>" disabled>
+        <label>Break Out Time</label>
+        <input type="time" name="break_out_time" id="break_out_time" value="<?= $old('break_out_time') ?>" disabled>
       </div>
 
       <div class="actions">
@@ -177,7 +589,7 @@ td{padding:9px 10px;border-bottom:1px solid #eee}
     </form>
 
     <details>
-      <summary>&#9776; Reporting Hierarchy</summary>
+      <summary>Reporting Hierarchy</summary>
       <div class="body">
         <p><b>Employee:</b> <?= e($name) ?> (<?= e($empNo) ?>)</p>
         <p>Approval request eka oyage reporting supervisor ta yanawa.</p>
@@ -189,56 +601,104 @@ td{padding:9px 10px;border-bottom:1px solid #eee}
   <div class="panel" id="p-history">
     <h2>Manual Attendance History</h2>
     <?php if ($msg): ?><div class="alert ok"><?= e($msg) ?></div><?php endif; ?>
+
     <div class="scroll">
-    <table>
-      <tr><th>#</th><th>Remarks</th><th>Check In</th><th>Check Out</th><th>Break In</th><th>Break Out</th><th>Status</th><th>Applied On</th></tr>
-      <?php if (!$hist): ?><tr><td colspan="8" style="text-align:center;color:#888">No records found.</td></tr><?php endif; ?>
-      <?php foreach ($hist as $i => $r):
-        $f = fn($d,$t) => $d ? e($d.' '.substr($t,0,5)) : '-'; ?>
-      <tr>
-        <td><?= $i+1 ?></td><td><?= e($r['remarks']) ?></td>
-        <td><?= $f($r['check_in_date'],$r['check_in_time']) ?></td>
-        <td><?= $f($r['check_out_date'],$r['check_out_time']) ?></td>
-        <td><?= $f($r['break_in_date'],$r['break_in_time']) ?></td>
-        <td><?= $f($r['break_out_date'],$r['break_out_time']) ?></td>
-        <td><span class="badge <?= e($r['status']) ?>"><?= e($r['status']) ?></span></td>
-        <td><?= e($r['created_at']) ?></td>
-      </tr>
-      <?php endforeach; ?>
-    </table>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Remarks</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Break In</th>
+            <th>Break Out</th>
+            <th>Status</th>
+            <th>Applied On</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php if (!$hist): ?>
+            <tr>
+              <td colspan="8" style="text-align:center;color:#888;padding:24px">No records found.</td>
+            </tr>
+          <?php endif; ?>
+          <?php foreach ($hist as $i => $r):
+            $f = fn($d, $t) => $d ? e($d . ' ' . substr($t, 0, 5)) : '—';
+          ?>
+          <tr>
+            <td><?= $i + 1 ?></td>
+            <td><?= e($r['remarks']) ?></td>
+            <td><?= $f($r['check_in_date'], $r['check_in_time']) ?></td>
+            <td><?= $f($r['check_out_date'], $r['check_out_time']) ?></td>
+            <td><?= $f($r['break_in_date'], $r['break_in_time']) ?></td>
+            <td><?= $f($r['break_out_date'], $r['break_out_time']) ?></td>
+            <td><span class="badge <?= e($r['status']) ?>"><?= e($r['status']) ?></span></td>
+            <td><?= e($r['created_at']) ?></td>
+          </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
 
 <script>
-const ids = {c:{in:['check_in_date','check_in_time'],out:['check_out_date','check_out_time']},
-             b:{in:['break_in_date','break_in_time'],out:['break_out_date','break_out_time']}};
+const ids = {
+  c: { in: ['check_in_date', 'check_in_time'], out: ['check_out_date', 'check_out_time'] },
+  b: { in: ['break_in_date', 'break_in_time'], out: ['break_out_date', 'break_out_time'] }
+};
 const $ = id => document.getElementById(id);
 
-function showTab(t){
-  ['apply','history'].forEach(x=>{ $('p-'+x).classList.toggle('show',x===t); $('t-'+x).classList.toggle('active',x===t); });
+function showTab(t) {
+  ['apply', 'history'].forEach(x => {
+    $('p-' + x).classList.toggle('show', x === t);
+    $('t-' + x).classList.toggle('active', x === t);
+  });
 }
-function setFields(g, which, on){
-  ids[g][which].forEach(id=>{ const el=$(id); el.disabled=!on; if(!on) el.value=''; });
-}
-function setMode(g, m){
-  setFields(g,'in',  m==='in'  || m==='both');
-  setFields(g,'out', m==='out' || m==='both');
-  document.querySelectorAll('.mode[data-g="'+g+'"]').forEach(b=>b.classList.toggle('on', b.dataset.m===m));
-}
-document.querySelectorAll('.mode[data-g]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.g,b.dataset.m)));
-$('incBreak').addEventListener('click',()=>{ setMode('c','both'); setMode('b','both'); $('incBreak').classList.add('on'); });
 
-function resetForm(){
-  $('mform').reset();
-  document.querySelectorAll('.mode').forEach(b=>b.classList.remove('on'));
-  ['c','b'].forEach(g=>{ setFields(g,'in',false); setFields(g,'out',false); });
-  document.querySelector('[name=remarks]').value='';
+function setFields(g, which, on) {
+  ids[g][which].forEach(id => {
+    const el = $(id);
+    el.disabled = !on;
+    if (!on) el.value = '';
+  });
 }
-// POST error unama fields tika enable karanawa
-Object.values(ids).forEach(g=>Object.values(g).forEach(arr=>{
-  if(arr.some(id=>$(id).value)) arr.forEach(id=>$(id).disabled=false);
+
+function setMode(g, m) {
+  setFields(g, 'in',  m === 'in'  || m === 'both');
+  setFields(g, 'out', m === 'out' || m === 'both');
+  document.querySelectorAll('.mode[data-g="' + g + '"]').forEach(b => {
+    b.classList.toggle('on', b.dataset.m === m);
+  });
+}
+
+document.querySelectorAll('.mode[data-g]').forEach(b => {
+  b.addEventListener('click', () => setMode(b.dataset.g, b.dataset.m));
+});
+
+$('incBreak').addEventListener('click', () => {
+  setMode('c', 'both');
+  setMode('b', 'both');
+  $('incBreak').classList.add('on');
+});
+
+function resetForm() {
+  $('mform').reset();
+  document.querySelectorAll('.mode').forEach(b => b.classList.remove('on'));
+  ['c', 'b'].forEach(g => {
+    setFields(g, 'in', false);
+    setFields(g, 'out', false);
+  });
+  document.querySelector('[name=remarks]').value = '';
+}
+
+// Keep fields enabled if they already have values (after validation error)
+Object.values(ids).forEach(g => Object.values(g).forEach(arr => {
+  if (arr.some(id => $(id).value)) {
+    arr.forEach(id => $(id).disabled = false);
+  }
 }));
+
 showTab(<?= json_encode($tab === 'history' ? 'history' : 'apply') ?>);
 </script>
 </body>
