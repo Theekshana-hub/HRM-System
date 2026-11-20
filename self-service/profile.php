@@ -6,7 +6,6 @@ $emp = find_employee($_SESSION['emp'][COL_EMP_NO]) ?? [];
 $name = $emp['full_name'] ?? $emp['name_with_initials'] ?? $_SESSION['emp'][COL_EMP_NO];
 $navName = $emp['name_with_initials'] ?? $name;
 
-/* ---------- helpers ---------- */
 function lookup_value(string $table, $id): ?string {
     try {
         $db = getDB();
@@ -33,7 +32,6 @@ function fmt_date($v): string {
     return $t ? date('d M Y', $t) : (string)$v;
 }
 
-// type: text | date | bool | lookup:<table>
 function val(array $row, array $cands, string $type = 'text') {
     foreach ($cands as $c) {
         if ($c === '@dob_day'   && !empty($row['date_of_birth'])) return (int)date('j', strtotime($row['date_of_birth']));
@@ -50,7 +48,6 @@ function val(array $row, array $cands, string $type = 'text') {
     return $type === 'bool' ? false : '';
 }
 
-/* ---------- sections & fields: [label, candidate columns, type] ---------- */
 $sections = [
  'master' => ['Employee Master', 'Personal Details', 'dark', [
    ['Emp No', ['emp_no']], ['Office Use Name', ['office_use_name']], ['Language', ['language']],
@@ -89,90 +86,402 @@ $sections = [
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Employee Profile - Sipway Campus</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Poppins',sans-serif;background:#fff;color:#222}
-nav{background:#1ba1e2;color:#fff;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(15px,12vw,240px)}
-nav a{color:#fff;text-decoration:none;font-size:15px;margin-right:24px}
-.wrap{max-width:1430px;margin:0 auto;padding:0 20px 40px}
-.head{display:flex;gap:70px;align-items:flex-start;margin:20px 0 25px}
-.head svg{width:225px;height:225px;flex:none;border-radius:50%}
-.head h1{font-weight:400;font-size:30px;margin-top:-6px}
-.bar{display:flex;align-items:center;gap:12px;width:100%;border:0;cursor:pointer;color:#fff;font:400 18px 'Poppins',sans-serif;padding:14px 10px;margin-top:5px;text-align:left;
-  background:repeating-linear-gradient(135deg,#0b2d5a 0 14px,#27508a 14px 28px)}
-.bar.light{background:repeating-linear-gradient(135deg,#1ba1e2 0 14px,#42b0ea 14px 28px)}
-.bar .arr{font-size:9px;transition:.2s}
-.bar.open .arr{transform:rotate(90deg)}
-.panel{display:none;border:1px solid #eee;padding:22px 12px 30px}
-.panel.show{display:block}
-.panel h2{font-weight:400;font-size:29px;padding-bottom:8px;border-bottom:1px solid #ddd;margin-bottom:22px}
-.grid{display:grid;grid-template-columns:repeat(3,375px);gap:14px 25px}
-.f label{display:block;font-size:17px;margin-bottom:6px;min-height:26px}
-.f input{width:100%;height:40px;border:1px solid #ccc;padding:6px 8px;font:17px 'Poppins',sans-serif;background:#fff;color:#222}
-.tg{display:inline-flex;width:60px;height:26px;border:1px solid #bbb;margin-top:4px}
-.tg i{flex:1}.tg b{width:18px;background:#333}
-.tg.on i{background:#17a600}.tg.off{flex-direction:row-reverse}.tg.off i{background:#ee1111}
-.empty{visibility:hidden}
-.dbg{margin-top:25px;font-size:13px;background:#f6f6f6;padding:12px;word-break:break-all}
-@media(max-width:1250px){.grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:800px){.grid{grid-template-columns:1fr}.head{gap:20px;flex-direction:column}.head svg{width:140px;height:140px}}
+  :root {
+    --primary: #0ea5e9;
+    --primary-dark: #0284c7;
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  nav {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(16px);
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    border-bottom: 1px solid rgba(14, 165, 233, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  }
+
+  nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 14.5px;
+    font-weight: 500;
+    margin-right: 22px;
+    transition: color 0.25s ease;
+  }
+
+  nav a:hover {
+    color: var(--primary);
+  }
+
+  nav b {
+    font-weight: 800;
+    font-size: 17px;
+    color: var(--text);
+  }
+
+  nav b span {
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .user-info {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .logout-btn {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    color: white !important;
+    padding: 7px 16px;
+    border-radius: 9px;
+    font-weight: 600 !important;
+    font-size: 13.5px !important;
+    margin-left: 12px;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+    transition: all 0.3s ease;
+  }
+
+  .logout-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
+  }
+
+  .wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 24px 60px;
+  }
+
+  .head {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    margin-bottom: 36px;
+    background: var(--card);
+    padding: 28px 32px;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(14, 165, 233, 0.08);
+  }
+
+  .head img,
+  .head svg {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 4px solid #e0f2fe;
+    box-shadow: 0 8px 24px rgba(14, 165, 233, 0.15);
+  }
+
+  .head h1 {
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+
+  .head h1 span {
+    display: block;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    font: 600 16px 'Plus Jakarta Sans', sans-serif;
+    padding: 16px 22px;
+    margin-top: 12px;
+    text-align: left;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.15);
+  }
+
+  .bar.light {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  }
+
+  .bar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(14, 165, 233, 0.25);
+  }
+
+  .bar .arr {
+    font-size: 12px;
+    transition: transform 0.3s ease;
+  }
+
+  .bar.open .arr {
+    transform: rotate(90deg);
+  }
+
+  .panel {
+    display: none;
+    background: var(--card);
+    border-radius: 0 0 16px 16px;
+    padding: 28px 24px 32px;
+    margin-top: -6px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border);
+    border-top: none;
+    animation: fadeIn 0.35s ease;
+  }
+
+  .panel.show {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel h2 {
+    font-weight: 700;
+    font-size: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e0f2fe;
+    margin-bottom: 24px;
+    color: var(--text);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px 22px;
+  }
+
+  .f label {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .f input {
+    width: 100%;
+    height: 44px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 0 14px;
+    font: 500 15px 'Plus Jakarta Sans', sans-serif;
+    background: #f8fafc;
+    color: var(--text);
+    transition: border-color 0.25s ease;
+  }
+
+  .f input:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  .tg {
+    display: inline-flex;
+    width: 56px;
+    height: 28px;
+    border-radius: 20px;
+    margin-top: 4px;
+    overflow: hidden;
+    border: none;
+  }
+
+  .tg i {
+    flex: 1;
+  }
+
+  .tg b {
+    width: 20px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+
+  .tg.on {
+    background: #22c55e;
+  }
+
+  .tg.off {
+    background: #ef4444;
+    flex-direction: row-reverse;
+  }
+
+  .empty {
+    visibility: hidden;
+  }
+
+  .dbg {
+    margin-top: 30px;
+    font-size: 13px;
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 12px;
+    word-break: break-all;
+    border: 1px solid var(--border);
+  }
+
+  @media (max-width: 1100px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 700px) {
+    nav {
+      padding: 0 16px;
+      height: 60px;
+    }
+
+    .wrap {
+      padding: 24px 16px 50px;
+    }
+
+    .head {
+      flex-direction: column;
+      text-align: center;
+      gap: 20px;
+      padding: 24px 20px;
+    }
+
+    .head img,
+    .head svg {
+      width: 120px;
+      height: 120px;
+    }
+
+    .head h1 {
+      font-size: 24px;
+    }
+
+    .grid {
+      grid-template-columns: 1fr;
+    }
+
+    .bar {
+      font-size: 15px;
+      padding: 14px 18px;
+    }
+  }
 </style>
 </head>
 <body>
 <nav>
-  <div><a href="dashboard.php"><b>&#9638; Smart HRIS</b></a><a href="dashboard.php">&#8630;</a><a href="dashboard.php">Home</a></div>
-  <div style="font-size:15px">Hello, <?= e($navName) ?> &nbsp; <a href="logout.php" style="margin:0">Logout</a></div>
+  <div>
+    <a href="dashboard.php"><b>&#9638; <span>Smart HRIS</span></b></a>
+    <a href="dashboard.php">&#8630; Back</a>
+    <a href="dashboard.php">Home</a>
+  </div>
+  <div class="user-info">
+    Hello, <?= e($navName) ?>
+    <a href="logout.php" class="logout-btn">Logout</a>
+  </div>
 </nav>
 
 <div class="wrap">
   <div class="head">
     <?php $photo = trim((string)($emp['photo'] ?? '')); ?>
-    <?php if ($photo !== ''): ?><img src="../<?= e(ltrim($photo,'/')) ?>" alt="" style="width:225px;height:225px;border-radius:50%;object-fit:cover" onerror="this.style.display='none';document.getElementById('defav').style.display='block'"><?php endif; ?>
-    <span id="defav" style="<?= $photo !== '' ? 'display:none' : '' ?>">    <svg viewBox="0 0 225 225"><circle cx="112" cy="112" r="112" fill="#c7dcfb"/><path d="M45 225c0-45 30-65 67-65s67 20 67 65z" fill="#3d6ea8"/><path d="M92 160l20 40 20-40z" fill="#eee"/><path d="M107 170h10l4 30-9 15-9-15z" fill="#e0636b"/><rect x="82" y="55" width="60" height="85" rx="28" fill="#fdd9c8"/><path d="M78 80c0-35 20-45 36-45s34 10 34 45c-6-20-20-26-36-26s-28 6-34 26z" fill="#2f4668"/></svg></span>
-    <h1>Hi, <?= e($name) ?></h1>
+    <?php if ($photo !== ''): ?>
+      <img src="../<?= e(ltrim($photo,'/')) ?>" alt="" onerror="this.style.display='none';document.getElementById('defav').style.display='block'">
+    <?php endif; ?>
+    <span id="defav" style="<?= $photo !== '' ? 'display:none' : '' ?>">
+      <svg viewBox="0 0 225 225">
+        <circle cx="112" cy="112" r="112" fill="#c7dcfb"/>
+        <path d="M45 225c0-45 30-65 67-65s67 20 67 65z" fill="#3d6ea8"/>
+        <path d="M92 160l20 40 20-40z" fill="#eee"/>
+        <path d="M107 170h10l4 30-9 15-9-15z" fill="#e0636b"/>
+        <rect x="82" y="55" width="60" height="85" rx="28" fill="#fdd9c8"/>
+        <path d="M78 80c0-35 20-45 36-45s34 10 34 45c-6-20-20-26-36-26s-28 6-34 26z" fill="#2f4668"/>
+      </svg>
+    </span>
+    <h1>
+      Hi, <?= e($name) ?>
+      <span>Employee Profile</span>
+    </h1>
   </div>
 
-<?php foreach ($sections as $key => [$barTitle, $title, $style, $fields]): ?>
-  <button type="button" class="bar <?= $style === 'light' ? 'light' : '' ?>" data-t="<?= $key ?>"><span class="arr">&#9654;</span> &#9873; <?= e($barTitle) ?></button>
-  <div class="panel" id="p-<?= $key ?>">
-    <h2><?= e($title) ?></h2>
-    <div class="grid">
-    <?php foreach ($fields as $f):
-        [$label, $cands] = $f; $type = $f[2] ?? 'text';
-        if ($label === ''): ?><div class="f empty"></div><?php continue; endif;
-        $v = val($emp, $cands, $type); ?>
-      <div class="f">
-        <label><?= e($label) ?></label>
-        <?php if ($type === 'bool'): ?>
-          <span class="tg <?= $v ? 'on' : 'off' ?>"><i></i><b></b></span>
-        <?php else: ?>
-          <input type="text" value="<?= e($v) ?>" readonly>
-        <?php endif; ?>
+  <?php foreach ($sections as $key => [$barTitle, $title, $style, $fields]): ?>
+    <button type="button" class="bar <?= $style === 'light' ? 'light' : '' ?>" data-t="<?= $key ?>">
+      <span class="arr">&#9654;</span> <?= e($barTitle) ?>
+    </button>
+    <div class="panel" id="p-<?= $key ?>">
+      <h2><?= e($title) ?></h2>
+      <div class="grid">
+        <?php foreach ($fields as $f):
+          [$label, $cands] = $f;
+          $type = $f[2] ?? 'text';
+          if ($label === ''): ?>
+            <div class="f empty"></div>
+          <?php continue; endif;
+          $v = val($emp, $cands, $type); ?>
+          <div class="f">
+            <label><?= e($label) ?></label>
+            <?php if ($type === 'bool'): ?>
+              <span class="tg <?= $v ? 'on' : 'off' ?>"><i></i><b></b></span>
+            <?php else: ?>
+              <input type="text" value="<?= e($v) ?>" readonly>
+            <?php endif; ?>
+          </div>
+        <?php endforeach; ?>
       </div>
-    <?php endforeach; ?>
     </div>
-  </div>
-<?php endforeach; ?>
+  <?php endforeach; ?>
 
-<?php if (isset($_GET['debug'])): $c = $emp; unset($c[COL_NIC]); ?>
-  <div class="dbg"><b>DB columns (debug):</b><br><?= e(implode(', ', array_keys($c))) ?></div>
-<?php endif; ?>
+  <?php if (isset($_GET['debug'])): $c = $emp; unset($c[COL_NIC]); ?>
+    <div class="dbg"><b>DB columns (debug):</b><br><?= e(implode(', ', array_keys($c))) ?></div>
+  <?php endif; ?>
 </div>
 
 <script>
-const bars = document.querySelectorAll('.bar');
-function open_(key){
-  bars.forEach(b=>{
-    const on = b.dataset.t===key && !b.classList.contains('open');
-    b.classList.toggle('open', on);
-    document.getElementById('p-'+b.dataset.t).classList.toggle('show', on);
-  });
-}
-bars.forEach(b=>b.addEventListener('click',()=>open_(b.dataset.t)));
-open_('master');
+  const bars = document.querySelectorAll('.bar');
+  function open_(key) {
+    bars.forEach(b => {
+      const on = b.dataset.t === key && !b.classList.contains('open');
+      b.classList.toggle('open', on);
+      document.getElementById('p-' + b.dataset.t).classList.toggle('show', on);
+    });
+  }
+  bars.forEach(b => b.addEventListener('click', () => open_(b.dataset.t)));
+  open_('master');
 </script>
 </body>
 </html>
