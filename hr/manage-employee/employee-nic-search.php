@@ -4,7 +4,6 @@ require_once __DIR__ . '/../../config/db.php';
 
 $conn = getDB();
 
-// Ensure table exists
 $conn->query("CREATE TABLE IF NOT EXISTS employees (
     id INT AUTO_INCREMENT PRIMARY KEY,
     emp_no VARCHAR(50) UNIQUE,
@@ -70,211 +69,406 @@ function v($row, $key, $default = '') {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sipway Campus - Employee NIC Number Search</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background: #ffffff; min-height: 100vh; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sipway Campus - Employee NIC Number Search</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #0ea5e9;
+    --primary-dark: #0284c7;
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+  }
 
-        .navbar {
-            background: #1e293b; height: 50px; display: flex; align-items: center;
-            padding: 0 16px; color: white; position: sticky; top: 0; z-index: 100;
-        }
-        .nav-left { display: flex; align-items: center; gap: 12px; }
-        .nav-logo {
-            font-weight: 700; font-size: 13px; display: flex; align-items: center;
-            gap: 6px; color: white; text-decoration: none;
-        }
-        .nav-logo .icon {
-            width: 20px; height: 20px; background: linear-gradient(135deg,#3b82f6,#8b5cf6);
-            border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 10px;
-        }
-        .nav-btn {
-            background: transparent; border: none; color: #cbd5e1; cursor: pointer;
-            padding: 5px; border-radius: 4px;
-        }
-        .nav-btn:hover { background: rgba(255,255,255,0.1); color: white; }
-        .nav-btn svg { width: 16px; height: 16px; }
-        .search-nav { flex: 1; max-width: 240px; margin: 0 16px; }
-        .search-nav input {
-            width: 100%; padding: 6px 12px; border-radius: 16px; border: none;
-            background: rgba(255,255,255,0.12); color: white; font-size: 12px;
-            outline: none; font-family: inherit;
-        }
-        .nav-right { margin-left: auto; display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .main { padding: 28px 40px; max-width: 1300px; margin: 0 auto; }
-        .page-title {
-            font-size: 20px; font-weight: 600; color: #334155;
-            margin-bottom: 24px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;
-        }
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+  }
 
-        .search-section {
-            display: flex; flex-direction: column; align-items: flex-start;
-            gap: 16px; margin-bottom: 30px;
-        }
-        .search-row {
-            display: flex; align-items: center; gap: 16px; width: 100%; max-width: 700px;
-        }
-        .search-row label {
-            font-size: 14px; color: #334155; font-weight: 500; white-space: nowrap; min-width: 100px;
-        }
-        .search-row input {
-            flex: 1; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px;
-            font-size: 14px; font-family: inherit; outline: none;
-        }
-        .search-row input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+  /* ========== NAVBAR ========== */
+  .navbar {
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(16px);
+    height: 64px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
 
-        .btn-search {
-            display: inline-flex; align-items: center; gap: 8px;
-            padding: 12px 28px; background: #3b82f6; color: white; border: none;
-            border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer;
-            font-family: inherit; margin: 8px auto 0;
-            transition: background 0.2s;
-        }
-        .btn-search:hover { background: #2563eb; }
-        .btn-wrap { width: 100%; text-align: center; }
+  .nav-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
 
-        /* Results Table */
-        .table-wrap {
-            overflow-x: auto; margin-top: 10px;
-            border: 1px solid #e2e8f0; border-radius: 8px;
-        }
-        table {
-            width: 100%; border-collapse: collapse; font-size: 13px; min-width: 1100px;
-        }
-        thead th {
-            background: #f8fafc; color: #475569; font-weight: 600;
-            padding: 12px 14px; text-align: left; border-bottom: 2px solid #e2e8f0;
-            white-space: nowrap; font-size: 12px;
-        }
-        tbody td {
-            padding: 12px 14px; border-bottom: 1px solid #f1f5f9;
-            color: #334155; vertical-align: middle;
-        }
-        tbody tr:hover { background: #f8fafc; }
-        tbody tr:nth-child(even) { background: #fafbfc; }
-        tbody tr:nth-child(even):hover { background: #f1f5f9; }
+  .nav-logo {
+    font-weight: 800;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    text-decoration: none;
+  }
 
-        .record-count {
-            padding: 12px 16px; background: #f1f5f9; color: #64748b;
-            font-size: 13px; border-radius: 0 0 8px 8px; border-top: 1px solid #e2e8f0;
-        }
-        .no-results {
-            text-align: center; padding: 40px; color: #94a3b8; font-size: 14px;
-        }
-        .active-badge {
-            display: inline-block; padding: 2px 10px; border-radius: 12px;
-            font-size: 12px; font-weight: 500;
-        }
-        .active-true { background: #dcfce7; color: #16a34a; }
-        .active-false { background: #fee2e2; color: #dc2626; }
+  .nav-logo .icon {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #0ea5e9, #8b5cf6);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(14,165,233,0.4);
+  }
 
-        @media (max-width: 700px) {
-            .main { padding: 16px; }
-            .search-row { flex-direction: column; align-items: stretch; }
-        }
-    </style>
+  .nav-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 10px;
+    transition: all 0.25s;
+  }
+  .nav-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+  }
+  .nav-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .search-nav {
+    flex: 1;
+    max-width: 260px;
+    margin: 0 20px;
+  }
+  .search-nav input {
+    width: 100%;
+    padding: 9px 16px;
+    border-radius: 50px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.08);
+    color: white;
+    font-size: 13.5px;
+    outline: none;
+    font-family: inherit;
+  }
+  .search-nav input::placeholder {
+    color: #64748b;
+  }
+
+  .nav-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 13.5px;
+    color: #cbd5e1;
+  }
+  .nav-right strong {
+    color: white;
+  }
+
+  /* ========== MAIN ========== */
+  .main {
+    padding: 32px 36px 50px;
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+
+  .page-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 28px;
+    letter-spacing: -0.3px;
+  }
+
+  /* Search Section */
+  .search-card {
+    background: white;
+    border-radius: 16px;
+    padding: 28px 32px;
+    box-shadow: 0 6px 20px rgba(14,165,233,0.07);
+    border: 1px solid rgba(255,255,255,0.9);
+    margin-bottom: 28px;
+  }
+
+  .search-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    max-width: 640px;
+  }
+
+  .search-row label {
+    font-size: 14.5px;
+    color: var(--text);
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 110px;
+  }
+
+  .search-row input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-size: 14.5px;
+    font-family: inherit;
+    outline: none;
+    background: #f8fafc;
+    transition: all 0.25s;
+  }
+  .search-row input:focus {
+    border-color: var(--primary);
+    background: #f0f9ff;
+    box-shadow: 0 0 0 4px rgba(14,165,233,0.12);
+  }
+
+  .btn-wrap {
+    margin-top: 20px;
+  }
+
+  .btn-search {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 4px 14px rgba(14,165,233,0.3);
+    transition: all 0.25s;
+  }
+  .btn-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(14,165,233,0.4);
+  }
+
+  /* Table */
+  .table-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(14,165,233,0.07);
+    border: 1px solid rgba(255,255,255,0.9);
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    min-width: 1100px;
+  }
+
+  thead th {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: white;
+    font-weight: 600;
+    padding: 14px 16px;
+    text-align: left;
+    white-space: nowrap;
+    font-size: 12.5px;
+    letter-spacing: 0.2px;
+  }
+
+  tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  tbody tr:hover {
+    background: #f0f9ff;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .record-count {
+    padding: 14px 20px;
+    background: #f8fafc;
+    color: var(--text-muted);
+    font-size: 13.5px;
+    font-weight: 500;
+    border-top: 1px solid var(--border);
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 48px 20px;
+    color: #94a3b8;
+    font-size: 15px;
+  }
+
+  .active-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .active-true {
+    background: #d1fae5;
+    color: #059669;
+  }
+  .active-false {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+
+  @media (max-width: 700px) {
+    .main {
+      padding: 20px 16px 40px;
+    }
+    .search-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .search-row label {
+      min-width: auto;
+    }
+    .search-card {
+      padding: 20px;
+    }
+  }
+</style>
 </head>
 <body>
 
 <nav class="navbar">
-    <div class="nav-left">
-        <a href="../dashboard.php" class="nav-logo"><div class="icon">S</div> SIPWAY CAMPUS</a>
-        <button class="nav-btn" onclick="history.back()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-        </button>
-        <button class="nav-btn" onclick="location.href='../dashboard.php'">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        </button>
-    </div>
-    <div class="search-nav"><input type="text" placeholder=""></div>
-    <div class="nav-right">
-        <span>Welcome <strong>Admin</strong></span>
-        <button class="nav-btn" onclick="location.href='../index.php'">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-        </button>
-    </div>
+  <div class="nav-left">
+    <a href="../dashboard.php" class="nav-logo">
+      <div class="icon">S</div> SIPWAY CAMPUS
+    </a>
+    <button class="nav-btn" onclick="history.back()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <button class="nav-btn" onclick="location.href='../dashboard.php'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </button>
+  </div>
+  <div class="search-nav">
+    <input type="text" placeholder="Search...">
+  </div>
+  <div class="nav-right">
+    <span>Welcome <strong>Admin</strong></span>
+    <button class="nav-btn" onclick="location.href='../index.php'" title="Logout">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+    </button>
+  </div>
 </nav>
 
 <div class="main">
-    <h1 class="page-title">Employee NIC Number Search</h1>
+  <h1 class="page-title">Employee NIC Number Search</h1>
 
-    <form method="GET" class="search-section">
-        <div class="search-row">
-            <label>NIC Number</label>
-            <input type="text" name="nic" value="<?= htmlspecialchars($nic_query) ?>" placeholder="Enter NIC Number" autofocus>
-        </div>
-        <div class="btn-wrap">
-            <button type="submit" class="btn-search">🔍 Search</button>
-        </div>
+  <div class="search-card">
+    <form method="GET">
+      <div class="search-row">
+        <label>NIC Number</label>
+        <input type="text" name="nic" value="<?= htmlspecialchars($nic_query) ?>" placeholder="Enter NIC Number..." autofocus>
+      </div>
+      <div class="btn-wrap">
+        <button type="submit" class="btn-search">🔍 Search</button>
+      </div>
     </form>
+  </div>
 
-    <?php if ($searched): ?>
+  <?php if ($searched): ?>
+  <div class="table-card">
     <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>Emp No</th>
-                    <th>Emp Name</th>
-                    <th>EPF No</th>
-                    <th>Site Name</th>
-                    <th>Designation</th>
-                    <th>NIC No</th>
-                    <th>D . O . J</th>
-                    <th>Company</th>
-                    <th>Division</th>
-                    <th>Sub Division</th>
-                    <th>Is Service Braked</th>
-                    <th>Service Brake Date</th>
-                    <th>Is Active</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (count($results) > 0): ?>
-                    <?php foreach ($results as $row): ?>
-                    <tr>
-                        <td><?= v($row, 'emp_no') ?></td>
-                        <td><?= v($row, 'full_name') ?: v($row, 'name_with_initials') ?></td>
-                        <td><?= v($row, 'ppf_epf_no') ?></td>
-                        <td><?= v($row, 'base_customer_site', '001 | Head Office') ?></td>
-                        <td><?= v($row, 'designation') ?></td>
-                        <td><?= v($row, 'nic') ?></td>
-                        <td>
-                            <?php
-                            if (!empty($row['join_date'])) {
-                                echo date('n/j/Y', strtotime($row['join_date'])) . '<br><small style="color:#94a3b8">12:00:00 AM</small>';
-                            }
-                            ?>
-                        </td>
-                        <td><?= v($row, 'company_name') ?></td>
-                        <td><?= v($row, 'division_name') ?></td>
-                        <td><?= v($row, 'sub_division_name', 'None') ?></td>
-                        <td>No</td>
-                        <td></td>
-                        <td>
-                            <?php if (!empty($row['is_active_employee'])): ?>
-                                <span class="active-badge active-true">True</span>
-                            <?php else: ?>
-                                <span class="active-badge active-false">False</span>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
+      <table>
+        <thead>
+          <tr>
+            <th>Emp No</th>
+            <th>Emp Name</th>
+            <th>EPF No</th>
+            <th>Site Name</th>
+            <th>Designation</th>
+            <th>NIC No</th>
+            <th>D.O.J</th>
+            <th>Company</th>
+            <th>Division</th>
+            <th>Sub Division</th>
+            <th>Is Service Braked</th>
+            <th>Service Brake Date</th>
+            <th>Is Active</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php if (count($results) > 0): ?>
+            <?php foreach ($results as $row): ?>
+            <tr>
+              <td><?= v($row, 'emp_no') ?></td>
+              <td><?= v($row, 'full_name') ?: v($row, 'name_with_initials') ?></td>
+              <td><?= v($row, 'ppf_epf_no') ?></td>
+              <td><?= v($row, 'base_customer_site', '001 | Head Office') ?></td>
+              <td><?= v($row, 'designation') ?></td>
+              <td><?= v($row, 'nic') ?></td>
+              <td>
+                <?php
+                if (!empty($row['join_date'])) {
+                    echo date('n/j/Y', strtotime($row['join_date']));
+                }
+                ?>
+              </td>
+              <td><?= v($row, 'company_name') ?></td>
+              <td><?= v($row, 'division_name') ?></td>
+              <td><?= v($row, 'sub_division_name', 'None') ?></td>
+              <td>No</td>
+              <td>—</td>
+              <td>
+                <?php if (!empty($row['is_active_employee'])): ?>
+                  <span class="active-badge active-true">True</span>
                 <?php else: ?>
-                    <tr>
-                        <td colspan="13" class="no-results">No employees found for this NIC number.</td>
-                    </tr>
+                  <span class="active-badge active-false">False</span>
                 <?php endif; ?>
-            </tbody>
-        </table>
-        <div class="record-count">
-            <?= count($results) ?> Record<?= count($results) !== 1 ? 's' : '' ?> Found
-        </div>
+              </td>
+            </tr>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <tr>
+              <td colspan="13" class="no-results">No employees found for this NIC number.</td>
+            </tr>
+          <?php endif; ?>
+        </tbody>
+      </table>
     </div>
-    <?php endif; ?>
+    <div class="record-count">
+      <?= count($results) ?> Record<?= count($results) !== 1 ? 's' : '' ?> Found
+    </div>
+  </div>
+  <?php endif; ?>
 </div>
 
 </body>
