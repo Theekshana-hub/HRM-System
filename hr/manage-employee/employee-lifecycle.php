@@ -46,7 +46,6 @@ $conn->query("CREATE TABLE IF NOT EXISTS employees (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-// Seed sample
 $chk = $conn->query("SELECT COUNT(*) as c FROM employees");
 $row = $chk ? $chk->fetch_assoc() : ['c' => 0];
 if ((int)$row['c'] === 0) {
@@ -55,7 +54,6 @@ if ((int)$row['c'] === 0) {
 
 $emp = null;
 
-// AJAX search
 if (isset($_GET['ajax_search'])) {
     header('Content-Type: application/json');
     $q = $conn->real_escape_string(trim($_GET['ajax_search']));
@@ -85,189 +83,388 @@ function v($emp, $key, $default = '') {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sipway Campus - Employee History Details</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background: #ffffff; min-height: 100vh; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sipway Campus - Employee History Details</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #0ea5e9;
+    --primary-dark: #0284c7;
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+  }
 
-        .navbar {
-            background: #1e293b; height: 50px; display: flex; align-items: center;
-            padding: 0 16px; color: white; position: sticky; top: 0; z-index: 100;
-        }
-        .nav-left { display: flex; align-items: center; gap: 12px; }
-        .nav-logo {
-            font-weight: 700; font-size: 13px; display: flex; align-items: center;
-            gap: 6px; color: white; text-decoration: none;
-        }
-        .nav-logo .icon {
-            width: 20px; height: 20px; background: linear-gradient(135deg,#3b82f6,#8b5cf6);
-            border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 10px;
-        }
-        .nav-btn {
-            background: transparent; border: none; color: #cbd5e1; cursor: pointer;
-            padding: 5px; border-radius: 4px;
-        }
-        .nav-btn:hover { background: rgba(255,255,255,0.1); color: white; }
-        .nav-btn svg { width: 16px; height: 16px; }
-        .search-nav { flex: 1; max-width: 240px; margin: 0 16px; }
-        .search-nav input {
-            width: 100%; padding: 6px 12px; border-radius: 16px; border: none;
-            background: rgba(255,255,255,0.12); color: white; font-size: 12px;
-            outline: none; font-family: inherit;
-        }
-        .nav-right { margin-left: auto; display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .main { padding: 28px 40px; max-width: 1000px; margin: 0 auto; }
-        .page-header {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 24px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;
-        }
-        .page-title { font-size: 20px; font-weight: 600; color: #334155; }
-        .btn-print {
-            padding: 10px 20px; background: #e2e8f0; color: #475569; border: none;
-            border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer;
-            font-family: inherit; transition: 0.2s;
-        }
-        .btn-print:hover { background: #cbd5e1; }
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+  }
 
-        .search-wrap {
-            position: relative; max-width: 480px; margin-bottom: 30px;
-        }
-        .search-wrap input {
-            width: 100%; padding: 12px 44px 12px 16px; border: 1px solid #cbd5e1;
-            border-radius: 8px; font-size: 14px; font-family: inherit; outline: none;
-            color: #3b82f6;
-        }
-        .search-wrap input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
-        .search-wrap .s-icon {
-            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-            color: #3b82f6; font-size: 16px; pointer-events: none;
-        }
-        .suggestions {
-            position: absolute; top: 100%; left: 0; right: 0; background: white;
-            border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            z-index: 50; display: none; max-height: 200px; overflow-y: auto;
-        }
-        .suggestions.show { display: block; }
-        .suggestions div {
-            padding: 10px 14px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f1f5f9;
-        }
-        .suggestions div:hover { background: #eff6ff; }
+  /* ========== NAVBAR ========== */
+  .navbar {
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(16px);
+    height: 64px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
 
-        .profile-card {
-            display: flex; align-items: flex-start; gap: 32px; padding: 10px 0;
-        }
-        .avatar {
-            width: 120px; height: 120px; border-radius: 50%; background: #dbeafe;
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-        }
-        .avatar svg { width: 80px; height: 80px; }
+  .nav-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
 
-        .details-table { flex: 1; }
-        .details-table table { border-collapse: collapse; }
-        .details-table td {
-            padding: 8px 0; font-size: 14px; vertical-align: top;
-        }
-        .details-table td:first-child {
-            color: #64748b; font-weight: 500; min-width: 140px; padding-right: 24px;
-        }
-        .details-table td:last-child { color: #1e293b; }
+  .nav-logo {
+    font-weight: 800;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    text-decoration: none;
+  }
 
-        .empty-state {
-            text-align: center; padding: 60px 20px; color: #94a3b8; font-size: 14px;
-        }
+  .nav-logo .icon {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #0ea5e9, #8b5cf6);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(14,165,233,0.4);
+  }
 
-        @media print {
-            .navbar, .btn-print, .search-wrap { display: none !important; }
-            .main { padding: 0; }
-        }
+  .nav-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 10px;
+    transition: all 0.25s;
+  }
+  .nav-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+  }
+  .nav-btn svg {
+    width: 18px;
+    height: 18px;
+  }
 
-        @media (max-width: 600px) {
-            .main { padding: 16px; }
-            .profile-card { flex-direction: column; align-items: center; text-align: center; }
-            .details-table td:first-child { min-width: 110px; }
-        }
-    </style>
+  .search-nav {
+    flex: 1;
+    max-width: 260px;
+    margin: 0 20px;
+  }
+  .search-nav input {
+    width: 100%;
+    padding: 9px 16px;
+    border-radius: 50px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.08);
+    color: white;
+    font-size: 13.5px;
+    outline: none;
+    font-family: inherit;
+  }
+  .search-nav input::placeholder {
+    color: #64748b;
+  }
+
+  .nav-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 13.5px;
+    color: #cbd5e1;
+  }
+  .nav-right strong {
+    color: white;
+  }
+
+  /* ========== MAIN ========== */
+  .main {
+    padding: 32px 36px 50px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+
+  .page-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+
+  .btn-print {
+    padding: 10px 20px;
+    background: #e2e8f0;
+    color: #475569;
+    border: none;
+    border-radius: 11px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.25s;
+  }
+  .btn-print:hover {
+    background: #cbd5e1;
+  }
+
+  /* Search */
+  .search-wrap {
+    position: relative;
+    max-width: 520px;
+    margin-bottom: 32px;
+  }
+
+  .search-wrap input {
+    width: 100%;
+    padding: 13px 48px 13px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    font-size: 14.5px;
+    font-family: inherit;
+    outline: none;
+    background: white;
+    color: var(--text);
+    transition: all 0.25s;
+    box-shadow: 0 4px 12px rgba(14,165,233,0.05);
+  }
+  .search-wrap input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(14,165,233,0.12);
+  }
+
+  .search-wrap .s-icon {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--primary);
+    font-size: 16px;
+    pointer-events: none;
+  }
+
+  .suggestions {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+    z-index: 50;
+    display: none;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  .suggestions.show { display: block; }
+  .suggestions div {
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 13.5px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .suggestions div:hover {
+    background: #f0f9ff;
+  }
+
+  /* Profile Card */
+  .profile-card {
+    background: white;
+    border-radius: 18px;
+    padding: 32px;
+    display: flex;
+    align-items: flex-start;
+    gap: 36px;
+    box-shadow: 0 8px 24px rgba(14,165,233,0.08);
+    border: 1px solid rgba(255,255,255,0.9);
+  }
+
+  .avatar {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #dbeafe, #eff6ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 4px solid #e0f2fe;
+    box-shadow: 0 8px 20px rgba(14,165,233,0.15);
+  }
+  .avatar svg {
+    width: 80px;
+    height: 80px;
+  }
+
+  .details-table {
+    flex: 1;
+  }
+
+  .details-table table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .details-table td {
+    padding: 11px 0;
+    font-size: 14.5px;
+    vertical-align: top;
+  }
+
+  .details-table td:first-child {
+    color: var(--text-muted);
+    font-weight: 600;
+    min-width: 150px;
+    padding-right: 28px;
+  }
+
+  .details-table td:last-child {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 70px 20px;
+    color: #94a3b8;
+    font-size: 15px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+  }
+
+  @media print {
+    .navbar, .btn-print, .search-wrap { display: none !important; }
+    .main { padding: 0; }
+    .profile-card { box-shadow: none; border: 1px solid #e2e8f0; }
+  }
+
+  @media (max-width: 600px) {
+    .main { padding: 20px 16px 40px; }
+    .page-header { flex-direction: column; gap: 14px; align-items: flex-start; }
+    .profile-card {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 24px 20px;
+    }
+    .details-table td:first-child {
+      min-width: 120px;
+    }
+  }
+</style>
 </head>
 <body>
 
 <nav class="navbar">
-    <div class="nav-left">
-        <a href="../dashboard.php" class="nav-logo"><div class="icon">S</div> SIPWAY CAMPUS</a>
-        <button class="nav-btn" onclick="history.back()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-        </button>
-        <button class="nav-btn" onclick="location.href='../dashboard.php'">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        </button>
-    </div>
-    <div class="search-nav"><input type="text" placeholder=""></div>
-    <div class="nav-right">
-        <span>Welcome <strong>Admin</strong></span>
-        <button class="nav-btn" onclick="location.href='../index.php'">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-        </button>
-    </div>
+  <div class="nav-left">
+    <a href="../dashboard.php" class="nav-logo">
+      <div class="icon">S</div> SIPWAY CAMPUS
+    </a>
+    <button class="nav-btn" onclick="history.back()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <button class="nav-btn" onclick="location.href='../dashboard.php'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </button>
+  </div>
+  <div class="search-nav">
+    <input type="text" placeholder="Search...">
+  </div>
+  <div class="nav-right">
+    <span>Welcome <strong>Admin</strong></span>
+    <button class="nav-btn" onclick="location.href='../index.php'" title="Logout">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+    </button>
+  </div>
 </nav>
 
 <div class="main">
-    <div class="page-header">
-        <h1 class="page-title">Employee History Details</h1>
-        <button class="btn-print" onclick="window.print()">Print Page</button>
-    </div>
+  <div class="page-header">
+    <h1 class="page-title">Employee History Details</h1>
+    <button class="btn-print" onclick="window.print()">Print Page</button>
+  </div>
 
-    <div class="search-wrap">
-        <input type="text" id="searchInput"
-               value="<?= $emp ? (v($emp,'emp_no') . ' | ' . (v($emp,'full_name') ?: v($emp,'name_with_initials'))) : '' ?>"
-               placeholder="Search employee by number or name..." autocomplete="off">
-        <span class="s-icon">🔍</span>
-        <div class="suggestions" id="suggestions"></div>
-    </div>
+  <div class="search-wrap">
+    <input type="text" id="searchInput"
+           value="<?= $emp ? (v($emp,'emp_no') . ' | ' . (v($emp,'full_name') ?: v($emp,'name_with_initials'))) : '' ?>"
+           placeholder="Search employee by number or name..." autocomplete="off">
+    <span class="s-icon">🔍</span>
+    <div class="suggestions" id="suggestions"></div>
+  </div>
 
-    <?php if ($emp): ?>
-    <div class="profile-card">
-        <div class="avatar">
-            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="50" fill="#93c5fd"/>
-                <ellipse cx="50" cy="38" rx="18" ry="20" fill="#1e3a5f"/>
-                <path d="M22 88c0-16 12-26 28-26s28 10 28 26" fill="#1e40af"/>
-                <rect x="42" y="58" width="16" height="22" rx="2" fill="#dc2626"/>
-                <path d="M38 55h24v4H38z" fill="#1e3a5f"/>
-            </svg>
-        </div>
-        <div class="details-table">
-            <table>
-                <tr>
-                    <td>Employee Name</td>
-                    <td><?= v($emp,'emp_no') ?> | <?= v($emp,'full_name') ?: v($emp,'name_with_initials') ?></td>
-                </tr>
-                <tr>
-                    <td>Company</td>
-                    <td><?= v($emp,'company_name') ?></td>
-                </tr>
-                <tr>
-                    <td>Designation</td>
-                    <td><?= v($emp,'designation') ?></td>
-                </tr>
-                <tr>
-                    <td>Work Category</td>
-                    <td><?= v($emp,'work_category') ?></td>
-                </tr>
-                <tr>
-                    <td>Job Category</td>
-                    <td><?= v($emp,'job_category') ?></td>
-                </tr>
-            </table>
-        </div>
+  <?php if ($emp): ?>
+  <div class="profile-card">
+    <div class="avatar">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="50" fill="#93c5fd"/>
+        <ellipse cx="50" cy="38" rx="18" ry="20" fill="#1e3a5f"/>
+        <path d="M22 88c0-16 12-26 28-26s28 10 28 26" fill="#1e40af"/>
+        <rect x="42" y="58" width="16" height="22" rx="2" fill="#dc2626"/>
+        <path d="M38 55h24v4H38z" fill="#1e3a5f"/>
+      </svg>
     </div>
-    <?php else: ?>
-    <div class="empty-state">
-        Search an employee above to view history details.
+    <div class="details-table">
+      <table>
+        <tr>
+          <td>Employee Name</td>
+          <td><?= v($emp,'emp_no') ?> | <?= v($emp,'full_name') ?: v($emp,'name_with_initials') ?></td>
+        </tr>
+        <tr>
+          <td>Company</td>
+          <td><?= v($emp,'company_name') ?></td>
+        </tr>
+        <tr>
+          <td>Designation</td>
+          <td><?= v($emp,'designation') ?></td>
+        </tr>
+        <tr>
+          <td>Work Category</td>
+          <td><?= v($emp,'work_category') ?></td>
+        </tr>
+        <tr>
+          <td>Job Category</td>
+          <td><?= v($emp,'job_category') ?></td>
+        </tr>
+      </table>
     </div>
-    <?php endif; ?>
+  </div>
+  <?php else: ?>
+  <div class="empty-state">
+    Search an employee above to view history details.
+  </div>
+  <?php endif; ?>
 </div>
 
 <script>
@@ -276,35 +473,34 @@ const input = document.getElementById('searchInput');
 const box = document.getElementById('suggestions');
 
 input.addEventListener('input', function() {
-    clearTimeout(timer);
-    const q = this.value.trim();
-    // strip "91 | Name" format for search
-    const searchQ = q.includes('|') ? q.split('|')[0].trim() : q;
-    if (searchQ.length < 1) { box.classList.remove('show'); return; }
-    timer = setTimeout(() => {
-        fetch('employee-lifecycle.php?ajax_search=' + encodeURIComponent(searchQ))
-            .then(r => r.json())
-            .then(data => {
-                if (!data.length) { box.classList.remove('show'); return; }
-                box.innerHTML = data.map(d =>
-                    '<div onclick="location.href=\'employee-lifecycle.php?id='+d.id+'\'">'+d.label+'</div>'
-                ).join('');
-                box.classList.add('show');
-            });
-    }, 250);
+  clearTimeout(timer);
+  const q = this.value.trim();
+  const searchQ = q.includes('|') ? q.split('|')[0].trim() : q;
+  if (searchQ.length < 1) { box.classList.remove('show'); return; }
+  timer = setTimeout(() => {
+    fetch('employee-lifecycle.php?ajax_search=' + encodeURIComponent(searchQ))
+      .then(r => r.json())
+      .then(data => {
+        if (!data.length) { box.classList.remove('show'); return; }
+        box.innerHTML = data.map(d =>
+          '<div onclick="location.href=\'employee-lifecycle.php?id='+d.id+'\'">'+d.label+'</div>'
+        ).join('');
+        box.classList.add('show');
+      });
+  }, 250);
 });
 
 input.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        const q = this.value.trim();
-        const searchQ = q.includes('|') ? q.split('|')[0].trim() : q;
-        if (searchQ) location.href = 'employee-lifecycle.php?q=' + encodeURIComponent(searchQ);
-    }
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const q = this.value.trim();
+    const searchQ = q.includes('|') ? q.split('|')[0].trim() : q;
+    if (searchQ) location.href = 'employee-lifecycle.php?q=' + encodeURIComponent(searchQ);
+  }
 });
 
 document.addEventListener('click', e => {
-    if (!e.target.closest('.search-wrap')) box.classList.remove('show');
+  if (!e.target.closest('.search-wrap')) box.classList.remove('show');
 });
 </script>
 </body>
