@@ -119,7 +119,6 @@ if ($act === 'calc') {
 }
 if ($act === 'submit') {
     $v = validate_leave($db, $empNo, $_POST);
-    if ($supRaw === '') $v['err'] = "Your hierarchy supervisor's details are missing. Please inform HR";
     if ($v['err']) { $err = $v['err']; $tab = 'apply'; }
     else {
         $cov = implode(', ', array_map('trim', (array)($_POST['covering'] ?? [])));
@@ -765,9 +764,6 @@ function lv_dur(array $r): string { $s = n2($r['days']).' day(s)'; if ($r['hours
         <div><label>Minutes</label><input type="text" id="o_min" readonly></div>
       </div>
 
-      <?php if ($supRaw === ''): ?>
-        <div class="msg warn">&#9432; Your hierarchy supervisor's details are missing. Please inform HR</div>
-      <?php endif; ?>
       <?php if ($err): ?><div class="msg bad"><?= e($err) ?></div><?php endif; ?>
       <div class="msg ok" id="okmsg" style="display:none"></div>
       <div class="msg bad" id="badmsg" style="display:none"></div>
@@ -1079,7 +1075,6 @@ async function validateLeave() {
   $('o_min').value = j.minutes;
   $('okmsg').textContent = j.msg;
   $('okmsg').style.display = 'block';
-  <?php if ($supRaw === ''): ?>return;<?php endif; ?>
   submitBtn.disabled = false;
 }
 
