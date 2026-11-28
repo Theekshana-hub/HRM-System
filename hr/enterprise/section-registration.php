@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../config/db.php';
 
 $conn = getDB();
 
-// Ensure hierarchy tables
+
 $conn->query("CREATE TABLE IF NOT EXISTS companies (
     id INT AUTO_INCREMENT PRIMARY KEY,
     company_no VARCHAR(50) UNIQUE, company_name VARCHAR(200) NOT NULL,
@@ -68,7 +68,7 @@ if ((int)$row['c'] === 0) {
         ('4', 'Sipway English Academy Pvt Ltd', '2025')");
 }
 
-// AJAX cascading
+
 if (isset($_GET['ajax_divisions'])) {
     header('Content-Type: application/json');
     $cid = (int)$_GET['ajax_divisions'];
@@ -164,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Seed None sections if empty
+
 $chkS = $conn->query("SELECT COUNT(*) as c FROM sections");
 $rowS = $chkS ? $chkS->fetch_assoc() : ['c' => 0];
 if ((int)$rowS['c'] === 0) {
